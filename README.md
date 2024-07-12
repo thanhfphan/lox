@@ -1,2 +1,2 @@
-# lox
-The Lox programming language
+# Lox
+The Lox programming language(https://craftinginterpreters.com/)
