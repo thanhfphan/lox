@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"lox/ast"
+	"lox/interpret"
 	"lox/scan"
 	"os"
 )
@@ -23,5 +23,7 @@ func main() {
 
 	parser := ast.NewParser(tokens)
 	expr := parser.Parser()
-	fmt.Println(expr)
+
+	in := interpret.New()
+	in.Interpret(expr)
 }
