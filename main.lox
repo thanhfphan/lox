@@ -1,3 +1,5 @@
 
 
-(3 -2 ) * 7
+print "thanh phan";
+print true;
+print 2 + 1;

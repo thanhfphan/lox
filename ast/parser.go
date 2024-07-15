@@ -17,6 +17,36 @@ func (p *Parser) Parser() Expr {
 	return p.expression()
 }
 
+func (p *Parser) ParserStmt() []Stmt {
+	stmts := []Stmt{}
+	for !p.isAtEnd() {
+		stmts = append(stmts, p.stmt())
+	}
+	return stmts
+}
+
+func (p *Parser) stmt() Stmt {
+	if p.match(PRINT) {
+		return p.printStmt()
+	}
+
+	return p.expressionStmt()
+}
+
+func (p *Parser) printStmt() Stmt {
+	expr := p.expression()
+	p.consume(SEMICOLON, "Expect ';' after value.")
+
+	return &PrintStmt{expr}
+}
+
+func (p *Parser) expressionStmt() Stmt {
+	expr := p.expression()
+	p.consume(SEMICOLON, "Expect ';' after value.")
+
+	return &ExpressionStmt{expr}
+}
+
 func (p *Parser) synchronize() {
 	p.advance()
 

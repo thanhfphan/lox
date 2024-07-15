@@ -22,8 +22,12 @@ func main() {
 	tokens := scaner.ScanTokens()
 
 	parser := ast.NewParser(tokens)
-	expr := parser.Parser()
+	interpreter := interpret.New()
 
-	in := interpret.New()
-	in.Interpret(expr)
+	// expr := parser.Parser()
+	// interpreter.Interpret(expr)
+
+	stmts := parser.ParserStmt()
+	interpreter.InterpretStmt(stmts)
+
 }

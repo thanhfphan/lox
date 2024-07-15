@@ -18,8 +18,27 @@ func (i *Interpreter) Interpret(expr ast.Expr) {
 	fmt.Printf("Interpret obj: %v\n", obj)
 }
 
+func (i *Interpreter) InterpretStmt(stmts []ast.Stmt) {
+	for _, stmt := range stmts {
+		i.evaluateStmt(stmt)
+	}
+}
+
 func (i *Interpreter) evaluate(expr ast.Expr) any {
 	return expr.Accept(i)
+}
+
+func (i *Interpreter) evaluateStmt(stmt ast.Stmt) {
+	stmt.Accept(i)
+}
+
+func (i *Interpreter) VisitPrintStmt(stmt *ast.PrintStmt) {
+	val := i.evaluate(stmt.Expression)
+	fmt.Println(val)
+}
+
+func (i *Interpreter) VisitExpressionStmt(stmt *ast.ExpressionStmt) {
+	i.evaluate(stmt.Expression)
 }
 
 func (i *Interpreter) VisitLiteralExpr(expr *ast.LiteralExpr) any {
