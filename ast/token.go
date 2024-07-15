@@ -20,7 +20,7 @@ const (
 
 	// One or two character tokens.
 	BANG          TokenType = "!"
-	BANG_EQUAL    TokenType = "1="
+	BANG_EQUAL    TokenType = "!="
 	EQUAL         TokenType = "="
 	EQUAL_EQUAL   TokenType = "=="
 	GREATER       TokenType = ">"
@@ -72,7 +72,15 @@ func NewToken(t TokenType, lexeme string, literal any, line int) *Token {
 	}
 }
 
-func (t *Token) ToString() string {
+func (t *Token) Type() TokenType {
+	return t.tokenType
+}
+
+func (t *Token) Literal() any {
+	return t.literal
+}
+
+func (t *Token) Print() string {
 	return fmt.Sprintf("%s %s %v", t.tokenType, t.lexeme, t.literal)
 }
 

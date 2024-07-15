@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"lox/ast"
 	"lox/scan"
 	"os"
 )
@@ -20,9 +21,7 @@ func main() {
 	scaner := scan.NewScanner([]rune(string(content)))
 	tokens := scaner.ScanTokens()
 
-	fmt.Println("Token count:", len(tokens))
-	fmt.Println("--------")
-	for _, t := range tokens {
-		fmt.Println(t.ToString())
-	}
+	parser := ast.NewParser(tokens)
+	expr := parser.Parser()
+	fmt.Println(expr)
 }
