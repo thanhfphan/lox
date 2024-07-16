@@ -144,7 +144,6 @@ func (p *Parser) equality() Expr {
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		op := p.previous()
 		right := p.comparision()
-
 		expr = &BinaryExpr{
 			Left:  expr,
 			Op:    *op,
@@ -163,7 +162,6 @@ func (p *Parser) comparision() Expr {
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		op := p.previous()
 		right := p.term()
-
 		expr = &BinaryExpr{
 			Left:  expr,
 			Op:    *op,
@@ -180,7 +178,6 @@ func (p *Parser) term() Expr {
 	for p.match(MINUS, PLUS) {
 		op := p.previous()
 		right := p.factor()
-
 		expr = &BinaryExpr{
 			Left:  expr,
 			Op:    *op,
@@ -196,7 +193,6 @@ func (p *Parser) factor() Expr {
 	for p.match(SLASH, STAR) {
 		op := p.previous()
 		right := p.unary()
-
 		expr = &BinaryExpr{
 			Left:  expr,
 			Op:    *op,
@@ -213,7 +209,6 @@ func (p *Parser) unary() Expr {
 	if p.match(BANG, MINUS) {
 		op := p.previous()
 		right := p.unary()
-
 		return &UnaryExpr{
 			Op:   *op,
 			Expr: right,
@@ -235,17 +230,14 @@ func (p *Parser) primary() Expr {
 	if p.match(NIL) {
 		return &LiteralExpr{nil}
 	}
-
 	if p.match(NUMBER, STRING) {
 		return &LiteralExpr{p.previous().Literal()}
 	}
-
 	if p.match(IDENTIFIER) {
 		return &VariableExpr{
 			Name: p.previous(),
 		}
 	}
-
 	if p.match(LEFT_PAREN) {
 		expr := p.expression()
 		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
