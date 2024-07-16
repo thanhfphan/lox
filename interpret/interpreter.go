@@ -3,14 +3,18 @@ package interpret
 import (
 	"fmt"
 	"lox/ast"
+	"lox/env"
 	"reflect"
 )
 
 type Interpreter struct {
+	env *env.Env
 }
 
 func New() *Interpreter {
-	return &Interpreter{}
+	return &Interpreter{
+		env: env.New(),
+	}
 }
 
 func (i *Interpreter) Interpret(expr ast.Expr) {
@@ -20,7 +24,7 @@ func (i *Interpreter) Interpret(expr ast.Expr) {
 
 func (i *Interpreter) InterpretStmt(stmts []ast.Stmt) {
 	for _, stmt := range stmts {
-		i.evaluateStmt(stmt)
+		i.executeStmt(stmt)
 	}
 }
 
@@ -28,10 +32,11 @@ func (i *Interpreter) evaluate(expr ast.Expr) any {
 	return expr.Accept(i)
 }
 
-func (i *Interpreter) evaluateStmt(stmt ast.Stmt) {
+func (i *Interpreter) executeStmt(stmt ast.Stmt) {
 	stmt.Accept(i)
 }
 
+// Stmt visitors
 func (i *Interpreter) VisitPrintStmt(stmt *ast.PrintStmt) {
 	val := i.evaluate(stmt.Expression)
 	fmt.Println(val)
@@ -41,6 +46,22 @@ func (i *Interpreter) VisitExpressionStmt(stmt *ast.ExpressionStmt) {
 	i.evaluate(stmt.Expression)
 }
 
+func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) {
+	var v any
+	if stmt.Expr != nil {
+		v = i.evaluate(stmt.Expr)
+	}
+
+	i.env.Define(stmt.Name.Lexeme(), v)
+}
+
+func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) {
+	newEnv := env.New()
+	newEnv.SetEnclosing(i.env)
+	i.executeBlock(stmt.Statements, newEnv)
+}
+
+// Expr visitors
 func (i *Interpreter) VisitLiteralExpr(expr *ast.LiteralExpr) any {
 	return expr.Val
 }
@@ -100,6 +121,35 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.BinaryExpr) any {
 	}
 
 	return nil
+}
+func (i *Interpreter) VisitVariableExpr(expr *ast.VariableExpr) any {
+	val, err := i.env.Get(expr.Name)
+	if err != nil {
+		panic(err)
+	}
+
+	return val
+}
+
+func (i *Interpreter) VisitAssignExpr(expr *ast.AssignExpr) any {
+	val := i.evaluate(expr.Value)
+	err := i.env.Assign(expr.Name, val)
+	if err != nil {
+		panic(err)
+	}
+
+	return val
+}
+
+func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
+	prevEnv := i.env
+	i.env = env
+
+	for _, stmt := range stmts {
+		i.executeStmt(stmt)
+	}
+
+	i.env = prevEnv
 }
 
 func (i *Interpreter) isEqual(left any, right any) bool {

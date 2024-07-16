@@ -1,6 +1,8 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Parser struct {
 	tokens  []*Token
@@ -20,17 +22,57 @@ func (p *Parser) Parser() Expr {
 func (p *Parser) ParserStmt() []Stmt {
 	stmts := []Stmt{}
 	for !p.isAtEnd() {
-		stmts = append(stmts, p.stmt())
+		stmts = append(stmts, p.declaration())
 	}
 	return stmts
+}
+
+func (p *Parser) declaration() Stmt {
+	if p.match(VAR) {
+		return p.varDeclaration()
+	}
+
+	return p.stmt()
 }
 
 func (p *Parser) stmt() Stmt {
 	if p.match(PRINT) {
 		return p.printStmt()
 	}
+	if p.match(LEFT_BRACE) {
+		return &BlockStmt{
+			Statements: p.block(),
+		}
+	}
 
 	return p.expressionStmt()
+}
+
+func (p *Parser) varDeclaration() Stmt {
+	name := p.consume(IDENTIFIER, "Expect variable name")
+	var initializer Expr
+	if p.match(EQUAL) {
+		initializer = p.expression()
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
+
+	return &VarStmt{
+		Name: name,
+		Expr: initializer,
+	}
+}
+
+func (p *Parser) block() []Stmt {
+	var statements []Stmt
+
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		statements = append(statements, p.declaration())
+	}
+
+	p.consume(RIGHT_BRACE, "Expect '}' after block")
+
+	return statements
 }
 
 func (p *Parser) printStmt() Stmt {
@@ -64,6 +106,26 @@ func (p *Parser) synchronize() {
 	}
 }
 
+func (p *Parser) assignment() Expr {
+	expr := p.equality()
+	if p.match(EQUAL) {
+		equals := p.previous()
+		val := p.assignment()
+
+		switch v := expr.(type) {
+		case *VariableExpr:
+			return &AssignExpr{
+				Name:  v.Name,
+				Value: val,
+			}
+		}
+
+		panic(fmt.Errorf("Invalid assignment target: %s", equals.Literal()))
+	}
+
+	return expr
+}
+
 /*
 expression     → literal
 
@@ -72,7 +134,7 @@ expression     → literal
 	| grouping ;
 */
 func (p *Parser) expression() Expr {
-	return p.equality()
+	return p.assignment()
 }
 
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -176,6 +238,12 @@ func (p *Parser) primary() Expr {
 
 	if p.match(NUMBER, STRING) {
 		return &LiteralExpr{p.previous().Literal()}
+	}
+
+	if p.match(IDENTIFIER) {
+		return &VariableExpr{
+			Name: p.previous(),
+		}
 	}
 
 	if p.match(LEFT_PAREN) {

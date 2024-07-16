@@ -5,7 +5,11 @@ type Visitor interface {
 	VisitGroupingExpr(expr *GroupingExpr) any
 	VisitUnaryExpr(expr *UnaryExpr) any
 	VisitBinaryExpr(expr *BinaryExpr) any
+	VisitVariableExpr(expr *VariableExpr) any
+	VisitAssignExpr(expr *AssignExpr) any
 
 	VisitPrintStmt(stmt *PrintStmt)
 	VisitExpressionStmt(stmt *ExpressionStmt)
+	VisitVarStmt(stmt *VarStmt)
+	VisitBlockStmt(stmt *BlockStmt)
 }

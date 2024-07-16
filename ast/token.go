@@ -80,6 +80,10 @@ func (t *Token) Literal() any {
 	return t.literal
 }
 
+func (t *Token) Lexeme() string {
+	return t.lexeme
+}
+
 func (t *Token) Print() string {
 	return fmt.Sprintf("%s %s %v", t.tokenType, t.lexeme, t.literal)
 }
