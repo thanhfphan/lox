@@ -1,2 +1,3 @@
 # Lox
-The Lox programming language(https://craftinginterpreters.com/)
+
+Go implementation of Lox interpreter (based on the book "Crafting Interpreters")
