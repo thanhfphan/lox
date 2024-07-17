@@ -51,3 +51,13 @@ type IfStmt struct {
 func (s *IfStmt) Accept(v StmtVisitor) {
 	v.VisitIfStmt(s)
 }
+
+// WhileStmt ...
+type WhileStmt struct {
+	Condition Expr
+	Body      Stmt
+}
+
+func (s *WhileStmt) Accept(v StmtVisitor) {
+	v.VisitWhileStmt(s)
+}

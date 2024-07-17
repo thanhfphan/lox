@@ -23,38 +23,38 @@ func New() *Interpreter {
 }
 
 func (i *Interpreter) Interpret(expr ast.Expr) {
-	obj := i.evaluateExpr(expr)
+	obj := i.evaluate(expr)
 	fmt.Printf("Interpret obj: %v\n", obj)
 }
 
 func (i *Interpreter) InterpretStmt(stmts []ast.Stmt) {
 	for _, stmt := range stmts {
-		i.executeStmt(stmt)
+		i.execute(stmt)
 	}
 }
 
-func (i *Interpreter) evaluateExpr(expr ast.Expr) any {
+func (i *Interpreter) evaluate(expr ast.Expr) any {
 	return expr.Accept(i)
 }
 
-func (i *Interpreter) executeStmt(stmt ast.Stmt) {
+func (i *Interpreter) execute(stmt ast.Stmt) {
 	stmt.Accept(i)
 }
 
 // Stmt visitors
 func (i *Interpreter) VisitPrintStmt(stmt *ast.PrintStmt) {
-	val := i.evaluateExpr(stmt.Expression)
+	val := i.evaluate(stmt.Expression)
 	fmt.Println(val)
 }
 
 func (i *Interpreter) VisitExpressionStmt(stmt *ast.ExpressionStmt) {
-	i.evaluateExpr(stmt.Expression)
+	i.evaluate(stmt.Expression)
 }
 
 func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) {
 	var v any
 	if stmt.Expr != nil {
-		v = i.evaluateExpr(stmt.Expr)
+		v = i.evaluate(stmt.Expr)
 	}
 
 	i.env.Define(stmt.Name.Lexeme(), v)
@@ -67,10 +67,17 @@ func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) {
 }
 
 func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) {
-	if i.isTruthy(i.evaluateExpr(stmt.Condition)) {
-		i.executeStmt(stmt.Then)
+	if i.isTruthy(i.evaluate(stmt.Condition)) {
+		i.execute(stmt.Then)
 	} else if stmt.Else != nil {
-		i.executeStmt(stmt.Else)
+		i.execute(stmt.Else)
+	}
+
+}
+
+func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) {
+	for i.isTruthy(i.evaluate(stmt.Condition)) {
+		i.execute(stmt.Body)
 	}
 
 }
@@ -81,11 +88,11 @@ func (i *Interpreter) VisitLiteralExpr(expr *ast.LiteralExpr) any {
 }
 
 func (i *Interpreter) VisitGroupingExpr(expr *ast.GroupingExpr) any {
-	return i.evaluateExpr(expr.Expr)
+	return i.evaluate(expr.Expr)
 }
 
 func (i *Interpreter) VisitUnaryExpr(expr *ast.UnaryExpr) any {
-	right := i.evaluateExpr(expr.Expr)
+	right := i.evaluate(expr.Expr)
 
 	switch expr.Op.Type() {
 	case ast.BANG:
@@ -99,8 +106,8 @@ func (i *Interpreter) VisitUnaryExpr(expr *ast.UnaryExpr) any {
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr *ast.BinaryExpr) any {
-	left := i.evaluateExpr(expr.Left)
-	right := i.evaluateExpr(expr.Right)
+	left := i.evaluate(expr.Left)
+	right := i.evaluate(expr.Right)
 
 	// TODO: check before cast value
 	switch expr.Op.Type() {
@@ -146,7 +153,7 @@ func (i *Interpreter) VisitVariableExpr(expr *ast.VariableExpr) any {
 }
 
 func (i *Interpreter) VisitAssignExpr(expr *ast.AssignExpr) any {
-	val := i.evaluateExpr(expr.Value)
+	val := i.evaluate(expr.Value)
 	err := i.env.Assign(expr.Name, val)
 	if err != nil {
 		panic(err)
@@ -156,7 +163,7 @@ func (i *Interpreter) VisitAssignExpr(expr *ast.AssignExpr) any {
 }
 
 func (i *Interpreter) VisitLogicalExpr(expr *ast.LogicalExpr) any {
-	left := i.evaluateExpr(expr.Left)
+	left := i.evaluate(expr.Left)
 	if expr.Operator.Type() == ast.OR {
 		if i.isTruthy(left) {
 			return left
@@ -167,7 +174,7 @@ func (i *Interpreter) VisitLogicalExpr(expr *ast.LogicalExpr) any {
 		}
 	}
 
-	return i.evaluateExpr(expr.Right)
+	return i.evaluate(expr.Right)
 }
 
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
@@ -175,7 +182,7 @@ func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
 	i.env = env
 
 	for _, stmt := range stmts {
-		i.executeStmt(stmt)
+		i.execute(stmt)
 	}
 
 	i.env = prevEnv

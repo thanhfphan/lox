@@ -42,6 +42,9 @@ func (p *Parser) stmt() Stmt {
 	if p.match(IF) {
 		return p.ifStmt()
 	}
+	if p.match(WHILE) {
+		return p.whileStmt()
+	}
 	if p.match(LEFT_BRACE) {
 		return &BlockStmt{
 			Statements: p.block(),
@@ -49,6 +52,18 @@ func (p *Parser) stmt() Stmt {
 	}
 
 	return p.expressionStmt()
+}
+
+func (p *Parser) whileStmt() Stmt {
+	p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	condition := p.expression()
+	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
+	body := p.stmt()
+
+	return &WhileStmt{
+		Condition: condition,
+		Body:      body,
+	}
 }
 
 func (p *Parser) ifStmt() Stmt {
