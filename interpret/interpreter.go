@@ -7,6 +7,11 @@ import (
 	"reflect"
 )
 
+var (
+	_ ast.ExprVisitor = (*Interpreter)(nil)
+	_ ast.StmtVisitor = (*Interpreter)(nil)
+)
+
 type Interpreter struct {
 	env *env.Env
 }

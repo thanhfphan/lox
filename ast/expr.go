@@ -1,7 +1,7 @@
 package ast
 
 type Expr interface {
-	Accept(v Visitor) any
+	Accept(v ExprVisitor) any
 }
 
 // BinaryExpr ...
@@ -11,7 +11,7 @@ type BinaryExpr struct {
 	Right Expr
 }
 
-func (e *BinaryExpr) Accept(v Visitor) any {
+func (e *BinaryExpr) Accept(v ExprVisitor) any {
 	return v.VisitBinaryExpr(e)
 }
 
@@ -21,7 +21,7 @@ type UnaryExpr struct {
 	Expr Expr
 }
 
-func (e *UnaryExpr) Accept(v Visitor) any {
+func (e *UnaryExpr) Accept(v ExprVisitor) any {
 	return v.VisitUnaryExpr(e)
 }
 
@@ -30,7 +30,7 @@ type LiteralExpr struct {
 	Val any
 }
 
-func (e *LiteralExpr) Accept(v Visitor) any {
+func (e *LiteralExpr) Accept(v ExprVisitor) any {
 	return v.VisitLiteralExpr(e)
 }
 
@@ -39,7 +39,7 @@ type GroupingExpr struct {
 	Expr Expr
 }
 
-func (e *GroupingExpr) Accept(v Visitor) any {
+func (e *GroupingExpr) Accept(v ExprVisitor) any {
 	return v.VisitGroupingExpr(e)
 }
 
@@ -48,7 +48,7 @@ type VariableExpr struct {
 	Name *Token
 }
 
-func (e *VariableExpr) Accept(v Visitor) any {
+func (e *VariableExpr) Accept(v ExprVisitor) any {
 	return v.VisitVariableExpr(e)
 }
 
@@ -58,6 +58,6 @@ type AssignExpr struct {
 	Value Expr
 }
 
-func (e *AssignExpr) Accept(v Visitor) any {
+func (e *AssignExpr) Accept(v ExprVisitor) any {
 	return v.VisitAssignExpr(e)
 }

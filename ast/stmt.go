@@ -1,7 +1,7 @@
 package ast
 
 type Stmt interface {
-	Accept(v Visitor)
+	Accept(v StmtVisitor)
 }
 
 // PrintStmt ...
@@ -9,7 +9,7 @@ type PrintStmt struct {
 	Expression Expr
 }
 
-func (s *PrintStmt) Accept(v Visitor) {
+func (s *PrintStmt) Accept(v StmtVisitor) {
 	v.VisitPrintStmt(s)
 }
 
@@ -18,7 +18,7 @@ type ExpressionStmt struct {
 	Expression Expr
 }
 
-func (s *ExpressionStmt) Accept(v Visitor) {
+func (s *ExpressionStmt) Accept(v StmtVisitor) {
 	v.VisitExpressionStmt(s)
 }
 
@@ -28,7 +28,7 @@ type VarStmt struct {
 	Expr Expr
 }
 
-func (s *VarStmt) Accept(v Visitor) {
+func (s *VarStmt) Accept(v StmtVisitor) {
 	v.VisitVarStmt(s)
 }
 
@@ -37,6 +37,6 @@ type BlockStmt struct {
 	Statements []Stmt
 }
 
-func (s *BlockStmt) Accept(v Visitor) {
+func (s *BlockStmt) Accept(v StmtVisitor) {
 	v.VisitBlockStmt(s)
 }
