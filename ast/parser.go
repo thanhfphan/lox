@@ -39,6 +39,9 @@ func (p *Parser) stmt() Stmt {
 	if p.match(PRINT) {
 		return p.printStmt()
 	}
+	if p.match(IF) {
+		return p.ifStmt()
+	}
 	if p.match(LEFT_BRACE) {
 		return &BlockStmt{
 			Statements: p.block(),
@@ -46,6 +49,24 @@ func (p *Parser) stmt() Stmt {
 	}
 
 	return p.expressionStmt()
+}
+
+func (p *Parser) ifStmt() Stmt {
+	p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
+	condition := p.expression()
+	p.consume(RIGHT_PAREN, "Expect ')' after if condition.")
+
+	thenBranch := p.stmt()
+	var elseBranch Stmt
+	if p.match(ELSE) {
+		elseBranch = p.stmt()
+	}
+
+	return &IfStmt{
+		Condition: condition,
+		Then:      thenBranch,
+		Else:      elseBranch,
+	}
 }
 
 func (p *Parser) varDeclaration() Stmt {

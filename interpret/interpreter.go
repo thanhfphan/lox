@@ -23,7 +23,7 @@ func New() *Interpreter {
 }
 
 func (i *Interpreter) Interpret(expr ast.Expr) {
-	obj := i.evaluate(expr)
+	obj := i.evaluateExpr(expr)
 	fmt.Printf("Interpret obj: %v\n", obj)
 }
 
@@ -33,7 +33,7 @@ func (i *Interpreter) InterpretStmt(stmts []ast.Stmt) {
 	}
 }
 
-func (i *Interpreter) evaluate(expr ast.Expr) any {
+func (i *Interpreter) evaluateExpr(expr ast.Expr) any {
 	return expr.Accept(i)
 }
 
@@ -43,18 +43,18 @@ func (i *Interpreter) executeStmt(stmt ast.Stmt) {
 
 // Stmt visitors
 func (i *Interpreter) VisitPrintStmt(stmt *ast.PrintStmt) {
-	val := i.evaluate(stmt.Expression)
+	val := i.evaluateExpr(stmt.Expression)
 	fmt.Println(val)
 }
 
 func (i *Interpreter) VisitExpressionStmt(stmt *ast.ExpressionStmt) {
-	i.evaluate(stmt.Expression)
+	i.evaluateExpr(stmt.Expression)
 }
 
 func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) {
 	var v any
 	if stmt.Expr != nil {
-		v = i.evaluate(stmt.Expr)
+		v = i.evaluateExpr(stmt.Expr)
 	}
 
 	i.env.Define(stmt.Name.Lexeme(), v)
@@ -66,17 +66,26 @@ func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) {
 	i.executeBlock(stmt.Statements, newEnv)
 }
 
+func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) {
+	if i.isTruthy(i.evaluateExpr(stmt.Condition)) {
+		i.executeStmt(stmt.Then)
+	} else if stmt.Else != nil {
+		i.executeStmt(stmt.Else)
+	}
+
+}
+
 // Expr visitors
 func (i *Interpreter) VisitLiteralExpr(expr *ast.LiteralExpr) any {
 	return expr.Val
 }
 
 func (i *Interpreter) VisitGroupingExpr(expr *ast.GroupingExpr) any {
-	return i.evaluate(expr.Expr)
+	return i.evaluateExpr(expr.Expr)
 }
 
 func (i *Interpreter) VisitUnaryExpr(expr *ast.UnaryExpr) any {
-	right := i.evaluate(expr.Expr)
+	right := i.evaluateExpr(expr.Expr)
 
 	switch expr.Op.Type() {
 	case ast.BANG:
@@ -90,8 +99,8 @@ func (i *Interpreter) VisitUnaryExpr(expr *ast.UnaryExpr) any {
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr *ast.BinaryExpr) any {
-	left := i.evaluate(expr.Left)
-	right := i.evaluate(expr.Right)
+	left := i.evaluateExpr(expr.Left)
+	right := i.evaluateExpr(expr.Right)
 
 	// TODO: check before cast value
 	switch expr.Op.Type() {
@@ -137,7 +146,7 @@ func (i *Interpreter) VisitVariableExpr(expr *ast.VariableExpr) any {
 }
 
 func (i *Interpreter) VisitAssignExpr(expr *ast.AssignExpr) any {
-	val := i.evaluate(expr.Value)
+	val := i.evaluateExpr(expr.Value)
 	err := i.env.Assign(expr.Name, val)
 	if err != nil {
 		panic(err)

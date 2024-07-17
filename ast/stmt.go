@@ -40,3 +40,14 @@ type BlockStmt struct {
 func (s *BlockStmt) Accept(v StmtVisitor) {
 	v.VisitBlockStmt(s)
 }
+
+// IfStmt ...
+type IfStmt struct {
+	Condition Expr
+	Then      Stmt
+	Else      Stmt
+}
+
+func (s *IfStmt) Accept(v StmtVisitor) {
+	v.VisitIfStmt(s)
+}

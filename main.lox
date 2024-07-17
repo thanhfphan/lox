@@ -1,19 +1,12 @@
 var a = "global a";
-var b = "global b";
-var c = "global c";
-{
-  var a = "outer a";
-  var b = "outer b";
-  {
-    var a = "inner a";
-    print a;
-    print b;
-    print c;
-  }
-  print a;
-  print b;
-  print c;
-}
 print a;
-print b;
-print c;
+
+if (2 > 1)
+  print "hello inside";
+
+if (23 < 3)
+  print "shount not print this";
+else
+  print "23 must larger than 3!!!";
+
+
