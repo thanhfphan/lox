@@ -18,7 +18,7 @@ type Interpreter struct {
 
 func New() *Interpreter {
 	return &Interpreter{
-		env: env.New(),
+		env: env.New(nil),
 	}
 }
 
@@ -61,8 +61,7 @@ func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) {
 }
 
 func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) {
-	newEnv := env.New()
-	newEnv.SetEnclosing(i.env)
+	newEnv := env.New(i.env)
 	i.executeBlock(stmt.Statements, newEnv)
 }
 
@@ -72,14 +71,12 @@ func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) {
 	} else if stmt.Else != nil {
 		i.execute(stmt.Else)
 	}
-
 }
 
 func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) {
 	for i.isTruthy(i.evaluate(stmt.Condition)) {
 		i.execute(stmt.Body)
 	}
-
 }
 
 // Expr visitors
@@ -179,13 +176,14 @@ func (i *Interpreter) VisitLogicalExpr(expr *ast.LogicalExpr) any {
 
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
 	prevEnv := i.env
+	defer func() {
+		i.env = prevEnv
+	}()
 	i.env = env
 
 	for _, stmt := range stmts {
 		i.execute(stmt)
 	}
-
-	i.env = prevEnv
 }
 
 func (i *Interpreter) isEqual(left any, right any) bool {

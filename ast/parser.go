@@ -39,6 +39,9 @@ func (p *Parser) stmt() Stmt {
 	if p.match(PRINT) {
 		return p.printStmt()
 	}
+	if p.match(FOR) {
+		return p.forStmt()
+	}
 	if p.match(IF) {
 		return p.ifStmt()
 	}
@@ -52,6 +55,67 @@ func (p *Parser) stmt() Stmt {
 	}
 
 	return p.expressionStmt()
+}
+
+func (p *Parser) forStmt() Stmt {
+	p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+
+	var initStmt Stmt
+	if p.match(SEMICOLON) {
+		initStmt = nil
+	} else if p.match(VAR) {
+		initStmt = p.varDeclaration()
+	} else {
+		initStmt = p.expressionStmt()
+	}
+
+	var condition Expr
+	if !p.check(SEMICOLON) {
+		condition = p.expression()
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after loop condition.")
+
+	var increment Expr
+	if !p.check(RIGHT_PAREN) {
+		increment = p.expression()
+	}
+
+	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+	body := p.stmt()
+
+	if increment != nil {
+		body = &BlockStmt{
+			Statements: []Stmt{
+				body,
+				&ExpressionStmt{
+					Expression: increment,
+				}},
+		}
+	}
+
+	if condition == nil {
+		condition = &LiteralExpr{
+			Val: true,
+		}
+	}
+
+	body = &WhileStmt{
+		Condition: condition,
+		Body:      body,
+	}
+
+	if initStmt != nil {
+		body = &BlockStmt{
+			Statements: []Stmt{
+				initStmt,
+				body,
+			},
+		}
+	}
+
+	return body
 }
 
 func (p *Parser) whileStmt() Stmt {
