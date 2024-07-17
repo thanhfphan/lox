@@ -155,6 +155,21 @@ func (i *Interpreter) VisitAssignExpr(expr *ast.AssignExpr) any {
 	return val
 }
 
+func (i *Interpreter) VisitLogicalExpr(expr *ast.LogicalExpr) any {
+	left := i.evaluateExpr(expr.Left)
+	if expr.Operator.Type() == ast.OR {
+		if i.isTruthy(left) {
+			return left
+		}
+	} else {
+		if !i.isTruthy(left) {
+			return left
+		}
+	}
+
+	return i.evaluateExpr(expr.Right)
+}
+
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
 	prevEnv := i.env
 	i.env = env

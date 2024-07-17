@@ -128,7 +128,7 @@ func (p *Parser) synchronize() {
 }
 
 func (p *Parser) assignment() Expr {
-	expr := p.equality()
+	expr := p.or()
 	if p.match(EQUAL) {
 		equals := p.previous()
 		val := p.assignment()
@@ -142,6 +142,38 @@ func (p *Parser) assignment() Expr {
 		}
 
 		panic(fmt.Errorf("Invalid assignment target: %s", equals.Literal()))
+	}
+
+	return expr
+}
+
+func (p *Parser) or() Expr {
+	expr := p.and()
+
+	for p.match(OR) {
+		op := p.previous()
+		right := p.and()
+		expr = &LogicalExpr{
+			Left:     expr,
+			Operator: op,
+			Right:    right,
+		}
+	}
+
+	return expr
+}
+
+func (p *Parser) and() Expr {
+	expr := p.equality()
+
+	for p.match(AND) {
+		op := p.previous()
+		right := p.equality()
+		expr = &LogicalExpr{
+			Left:     expr,
+			Operator: op,
+			Right:    right,
+		}
 	}
 
 	return expr

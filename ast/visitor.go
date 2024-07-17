@@ -7,6 +7,7 @@ type ExprVisitor interface {
 	VisitBinaryExpr(expr *BinaryExpr) any
 	VisitVariableExpr(expr *VariableExpr) any
 	VisitAssignExpr(expr *AssignExpr) any
+	VisitLogicalExpr(stmt *LogicalExpr) any
 }
 
 type StmtVisitor interface {

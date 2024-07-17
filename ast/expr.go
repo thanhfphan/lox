@@ -61,3 +61,14 @@ type AssignExpr struct {
 func (e *AssignExpr) Accept(v ExprVisitor) any {
 	return v.VisitAssignExpr(e)
 }
+
+// LogicalExpr ...
+type LogicalExpr struct {
+	Left     Expr
+	Operator *Token
+	Right    Expr
+}
+
+func (s *LogicalExpr) Accept(v ExprVisitor) any {
+	return v.VisitLogicalExpr(s)
+}
