@@ -24,10 +24,6 @@ func main() {
 	parser := ast.NewParser(tokens)
 	interpreter := interpret.New()
 
-	// expr := parser.Parser()
-	// interpreter.Interpret(expr)
-
 	stmts := parser.ParserStmt()
-	interpreter.InterpretStmt(stmts)
-
+	interpreter.Interpret(stmts)
 }

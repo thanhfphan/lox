@@ -22,12 +22,7 @@ func New() *Interpreter {
 	}
 }
 
-func (i *Interpreter) Interpret(expr ast.Expr) {
-	obj := i.evaluate(expr)
-	fmt.Printf("Interpret obj: %v\n", obj)
-}
-
-func (i *Interpreter) InterpretStmt(stmts []ast.Stmt) {
+func (i *Interpreter) Interpret(stmts []ast.Stmt) {
 	for _, stmt := range stmts {
 		i.execute(stmt)
 	}
