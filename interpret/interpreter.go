@@ -16,12 +16,15 @@ var (
 	GlobalEnv = env.New(nil)
 )
 
+func init() {
+	GlobalEnv.Define("clock", NewClock())
+}
+
 type Interpreter struct {
 	env *env.Env
 }
 
 func New() *Interpreter {
-	GlobalEnv.Define("clock", NewClock())
 	return &Interpreter{
 		env: GlobalEnv,
 	}
@@ -80,7 +83,7 @@ func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) {
 }
 
 func (i *Interpreter) VisitFunctionStmt(stmt *ast.FunctionStmt) any {
-	fun := NewFunction(stmt)
+	fun := NewFunction(stmt, i.env)
 	i.env.Define(stmt.Name.Lexeme(), fun)
 	return nil
 }

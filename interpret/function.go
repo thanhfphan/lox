@@ -9,11 +9,13 @@ var _ Callable = (*Function)(nil)
 
 type Function struct {
 	declaration *ast.FunctionStmt
+	closure     *env.Env
 }
 
-func NewFunction(declaration *ast.FunctionStmt) *Function {
+func NewFunction(declaration *ast.FunctionStmt, closure *env.Env) *Function {
 	return &Function{
 		declaration: declaration,
+		closure:     closure,
 	}
 }
 
@@ -22,7 +24,7 @@ func (f *Function) Arity() int {
 }
 
 func (f *Function) Call(interpreter *Interpreter, arguments []any) any {
-	env := env.New(GlobalEnv)
+	env := env.New(f.closure)
 	for i := 0; i < len(f.declaration.Params); i++ {
 		env.Define(f.declaration.Params[i].Lexeme(), arguments[i])
 	}
