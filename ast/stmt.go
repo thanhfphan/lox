@@ -61,3 +61,24 @@ type WhileStmt struct {
 func (s *WhileStmt) Accept(v StmtVisitor) {
 	v.VisitWhileStmt(s)
 }
+
+// FunctionStmt
+type FunctionStmt struct {
+	Name   *Token
+	Params []*Token
+	Body   []Stmt
+}
+
+func (s *FunctionStmt) Accept(v StmtVisitor) {
+	v.VisitFunctionStmt(s)
+}
+
+// ReturnStmt
+type ReturnStmt struct {
+	KeyWord *Token
+	Value   Expr
+}
+
+func (s *ReturnStmt) Accept(v StmtVisitor) {
+	v.VisitReturnStmt(s)
+}

@@ -72,3 +72,14 @@ type LogicalExpr struct {
 func (s *LogicalExpr) Accept(v ExprVisitor) any {
 	return v.VisitLogicalExpr(s)
 }
+
+// CallExpr ...
+type CallExpr struct {
+	Callee    Expr
+	Paren     *Token
+	Arguments []Expr
+}
+
+func (s *CallExpr) Accept(v ExprVisitor) any {
+	return v.VisitCallExpr(s)
+}

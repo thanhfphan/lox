@@ -12,13 +12,18 @@ var (
 	_ ast.StmtVisitor = (*Interpreter)(nil)
 )
 
+var (
+	GlobalEnv = env.New(nil)
+)
+
 type Interpreter struct {
 	env *env.Env
 }
 
 func New() *Interpreter {
+	GlobalEnv.Define("clock", NewClock())
 	return &Interpreter{
-		env: env.New(nil),
+		env: GlobalEnv,
 	}
 }
 
@@ -72,6 +77,25 @@ func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) {
 	for i.isTruthy(i.evaluate(stmt.Condition)) {
 		i.execute(stmt.Body)
 	}
+}
+
+func (i *Interpreter) VisitFunctionStmt(stmt *ast.FunctionStmt) any {
+	fun := NewFunction(stmt)
+	i.env.Define(stmt.Name.Lexeme(), fun)
+	return nil
+}
+
+func (i *Interpreter) VisitReturnStmt(stmt *ast.ReturnStmt) any {
+	var value any
+	if stmt.Value != nil {
+		value = i.evaluate(stmt.Value)
+	}
+
+	r := &Return{
+		Value: value,
+	}
+	// hack to back top of the Stack
+	panic(r)
 }
 
 // Expr visitors
@@ -167,6 +191,25 @@ func (i *Interpreter) VisitLogicalExpr(expr *ast.LogicalExpr) any {
 	}
 
 	return i.evaluate(expr.Right)
+}
+
+func (i *Interpreter) VisitCallExpr(expr *ast.CallExpr) any {
+	callee := i.evaluate(expr.Callee)
+
+	args := []any{}
+	for _, item := range expr.Arguments {
+		args = append(args, i.evaluate(item))
+	}
+
+	function, ok := callee.(Callable)
+	if !ok {
+		panic("Can't parse callee to LoxCallable")
+	}
+	if len(args) != function.Arity() {
+		panic(fmt.Errorf("Expect %d arguments but got %d.", function.Arity(), len(args)))
+	}
+
+	return function.Call(i, args)
 }
 
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {

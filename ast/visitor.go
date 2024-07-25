@@ -1,13 +1,14 @@
 package ast
 
 type ExprVisitor interface {
-	VisitLiteralExpr(expr *LiteralExpr) any
-	VisitGroupingExpr(expr *GroupingExpr) any
-	VisitUnaryExpr(expr *UnaryExpr) any
-	VisitBinaryExpr(expr *BinaryExpr) any
-	VisitVariableExpr(expr *VariableExpr) any
-	VisitAssignExpr(expr *AssignExpr) any
-	VisitLogicalExpr(stmt *LogicalExpr) any
+	VisitLiteralExpr(*LiteralExpr) any
+	VisitGroupingExpr(*GroupingExpr) any
+	VisitUnaryExpr(*UnaryExpr) any
+	VisitBinaryExpr(*BinaryExpr) any
+	VisitVariableExpr(*VariableExpr) any
+	VisitAssignExpr(*AssignExpr) any
+	VisitLogicalExpr(*LogicalExpr) any
+	VisitCallExpr(*CallExpr) any
 }
 
 type StmtVisitor interface {
@@ -17,4 +18,6 @@ type StmtVisitor interface {
 	VisitBlockStmt(stmt *BlockStmt)
 	VisitIfStmt(stmt *IfStmt)
 	VisitWhileStmt(stmt *WhileStmt)
+	VisitFunctionStmt(*FunctionStmt) any
+	VisitReturnStmt(*ReturnStmt) any
 }

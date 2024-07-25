@@ -28,6 +28,9 @@ func (p *Parser) ParserStmt() []Stmt {
 }
 
 func (p *Parser) declaration() Stmt {
+	if p.match(FUN) {
+		return p.function("function")
+	}
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
@@ -45,6 +48,9 @@ func (p *Parser) stmt() Stmt {
 	if p.match(IF) {
 		return p.ifStmt()
 	}
+	if p.match(RETURN) {
+		return p.returnStmt()
+	}
 	if p.match(WHILE) {
 		return p.whileStmt()
 	}
@@ -55,6 +61,46 @@ func (p *Parser) stmt() Stmt {
 	}
 
 	return p.expressionStmt()
+}
+
+func (p *Parser) returnStmt() Stmt {
+	keyword := p.previous()
+	var value Expr
+	if !p.check(SEMICOLON) {
+		value = p.expression()
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after return value.")
+
+	return &ReturnStmt{
+		KeyWord: keyword,
+		Value:   value,
+	}
+}
+
+func (p *Parser) function(kind string) Stmt {
+	funcName := p.consume(IDENTIFIER, "Expect "+kind+" name.")
+
+	p.consume(LEFT_PAREN, "Expect '(' after "+kind+" name.")
+
+	parameters := []*Token{}
+	if !p.check(RIGHT_PAREN) {
+		parameters = append(parameters, p.consume(IDENTIFIER, "Expect parameter name."))
+	}
+	for p.match(COMMA) {
+		parameters = append(parameters, p.consume(IDENTIFIER, "Expect parameter name."))
+	}
+
+	p.consume(RIGHT_PAREN, "Expect ')' after parameters.")
+	p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
+
+	body := p.block()
+
+	return &FunctionStmt{
+		Name:   funcName,
+		Params: parameters,
+		Body:   body,
+	}
 }
 
 func (p *Parser) forStmt() Stmt {
@@ -346,7 +392,40 @@ func (p *Parser) unary() Expr {
 			Expr: right,
 		}
 	}
-	return p.primary()
+
+	return p.call()
+}
+
+func (p *Parser) call() Expr {
+	expr := p.primary()
+
+	for {
+		if p.match(LEFT_PAREN) {
+			expr = p.finishCall(expr)
+		} else {
+			break
+		}
+	}
+
+	return expr
+}
+
+func (p *Parser) finishCall(callee Expr) Expr {
+	args := []Expr{}
+	if !p.check(RIGHT_PAREN) {
+		args = append(args, p.expression())
+		for p.match(COMMA) {
+			args = append(args, p.expression())
+		}
+	}
+
+	paren := p.consume(RIGHT_PAREN, "Expect ')' after arguments")
+
+	return &CallExpr{
+		Callee:    callee,
+		Paren:     paren,
+		Arguments: args,
+	}
 }
 
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
