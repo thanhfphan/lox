@@ -18,8 +18,7 @@ func (c *Clock) Arity() int {
 }
 
 func (c *Clock) Call(interpreter *Interpreter, arguments []any) any {
-	seconds := time.Now().Second()
-	return seconds
+	return time.Now().Unix()
 }
 
 func (c *Clock) ToString() string {
