@@ -17,8 +17,8 @@ func (e *BinaryExpr) Accept(v ExprVisitor) any {
 
 // UnaryExpr ...
 type UnaryExpr struct {
-	Op   Token
-	Expr Expr
+	Op    Token
+	Right Expr
 }
 
 func (e *UnaryExpr) Accept(v ExprVisitor) any {
@@ -36,7 +36,7 @@ func (e *LiteralExpr) Accept(v ExprVisitor) any {
 
 // GroupingExpr ...
 type GroupingExpr struct {
-	Expr Expr
+	Expression Expr
 }
 
 func (e *GroupingExpr) Accept(v ExprVisitor) any {

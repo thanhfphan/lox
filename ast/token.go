@@ -84,7 +84,7 @@ func (t *Token) Lexeme() string {
 	return t.lexeme
 }
 
-func (t *Token) Print() string {
+func (t *Token) String() string {
 	return fmt.Sprintf("%s %s %v", t.tokenType, t.lexeme, t.literal)
 }
 

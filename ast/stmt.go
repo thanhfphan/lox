@@ -24,8 +24,8 @@ func (s *ExpressionStmt) Accept(v StmtVisitor) {
 
 // VarStmt ...
 type VarStmt struct {
-	Name *Token
-	Expr Expr
+	Name        *Token
+	Initializer Expr
 }
 
 func (s *VarStmt) Accept(v StmtVisitor) {

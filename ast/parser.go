@@ -204,8 +204,8 @@ func (p *Parser) varDeclaration() Stmt {
 	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
 
 	return &VarStmt{
-		Name: name,
-		Expr: initializer,
+		Name:        name,
+		Initializer: initializer,
 	}
 }
 
@@ -388,8 +388,8 @@ func (p *Parser) unary() Expr {
 		op := p.previous()
 		right := p.unary()
 		return &UnaryExpr{
-			Op:   *op,
-			Expr: right,
+			Op:    *op,
+			Right: right,
 		}
 	}
 
@@ -453,7 +453,7 @@ func (p *Parser) primary() Expr {
 		expr := p.expression()
 		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
 		return &GroupingExpr{
-			Expr: expr,
+			Expression: expr,
 		}
 	}
 

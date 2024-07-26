@@ -13,20 +13,22 @@ var (
 )
 
 var (
-	GlobalEnv = env.New(nil)
+	GLOBAL_ENV = env.New(nil)
 )
 
 func init() {
-	GlobalEnv.Define("clock", NewClock())
+	GLOBAL_ENV.Define("clock", NewClock())
 }
 
 type Interpreter struct {
-	env *env.Env
+	env    *env.Env
+	locals map[ast.Expr]int
 }
 
 func New() *Interpreter {
 	return &Interpreter{
-		env: GlobalEnv,
+		env:    GLOBAL_ENV,
+		locals: make(map[ast.Expr]int),
 	}
 }
 
@@ -44,6 +46,10 @@ func (i *Interpreter) execute(stmt ast.Stmt) {
 	stmt.Accept(i)
 }
 
+func (i *Interpreter) Resolve(expr ast.Expr, depth int) {
+	i.locals[expr] = depth
+}
+
 // Stmt visitors
 func (i *Interpreter) VisitPrintStmt(stmt *ast.PrintStmt) {
 	val := i.evaluate(stmt.Expression)
@@ -56,8 +62,8 @@ func (i *Interpreter) VisitExpressionStmt(stmt *ast.ExpressionStmt) {
 
 func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) {
 	var v any
-	if stmt.Expr != nil {
-		v = i.evaluate(stmt.Expr)
+	if stmt.Initializer != nil {
+		v = i.evaluate(stmt.Initializer)
 	}
 
 	i.env.Define(stmt.Name.Lexeme(), v)
@@ -107,11 +113,11 @@ func (i *Interpreter) VisitLiteralExpr(expr *ast.LiteralExpr) any {
 }
 
 func (i *Interpreter) VisitGroupingExpr(expr *ast.GroupingExpr) any {
-	return i.evaluate(expr.Expr)
+	return i.evaluate(expr.Expression)
 }
 
 func (i *Interpreter) VisitUnaryExpr(expr *ast.UnaryExpr) any {
-	right := i.evaluate(expr.Expr)
+	right := i.evaluate(expr.Right)
 
 	switch expr.Op.Type() {
 	case ast.BANG:
@@ -163,19 +169,17 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.BinaryExpr) any {
 	return nil
 }
 func (i *Interpreter) VisitVariableExpr(expr *ast.VariableExpr) any {
-	val, err := i.env.Get(expr.Name)
-	if err != nil {
-		panic(err)
-	}
-
-	return val
+	return i.lookUpVariable(expr.Name, expr)
 }
 
 func (i *Interpreter) VisitAssignExpr(expr *ast.AssignExpr) any {
 	val := i.evaluate(expr.Value)
-	err := i.env.Assign(expr.Name, val)
-	if err != nil {
-		panic(err)
+
+	distance, has := i.locals[expr]
+	if has {
+		i.env.AssignAt(distance, expr.Name, val)
+	} else {
+		GLOBAL_ENV.Assign(expr.Name, val)
 	}
 
 	return val
@@ -225,6 +229,20 @@ func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
 	for _, stmt := range stmts {
 		i.execute(stmt)
 	}
+}
+
+func (i *Interpreter) lookUpVariable(name *ast.Token, expr ast.Expr) any {
+	distance, has := i.locals[expr]
+	if has {
+		return i.env.GetAt(distance, name.Lexeme())
+	}
+
+	val, err := GLOBAL_ENV.Get(name)
+	if err != nil {
+		panic(fmt.Errorf("GlobalEnv.Get error: %w", err))
+	}
+
+	return val
 }
 
 func (i *Interpreter) isEqual(left any, right any) bool {

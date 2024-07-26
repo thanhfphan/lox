@@ -4,6 +4,7 @@ import (
 	"io"
 	"lox/ast"
 	"lox/interpret"
+	"lox/resolve"
 	"lox/scan"
 	"os"
 )
@@ -20,10 +21,12 @@ func main() {
 
 	scaner := scan.NewScanner([]rune(string(content)))
 	tokens := scaner.ScanTokens()
-
 	parser := ast.NewParser(tokens)
-	interpreter := interpret.New()
-
+	// parse statements
 	stmts := parser.ParserStmt()
-	interpreter.Interpret(stmts)
+	i := interpret.New()
+	// resolving
+	resolver := resolve.NewResolver(i)
+	resolver.Resolve(stmts)
+	i.Interpret(stmts)
 }

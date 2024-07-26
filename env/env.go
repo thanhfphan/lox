@@ -21,6 +21,18 @@ func (e *Env) Define(name string, val any) {
 	e.values[name] = val
 }
 
+func (e *Env) GetAt(distance int, name string) any {
+	return e.ancestor(distance).values[name]
+}
+
+func (e *Env) ancestor(distance int) *Env {
+	env := e
+	for i := 0; i < distance; i++ {
+		env = env.enclosing
+	}
+	return env
+}
+
 func (e *Env) Get(token *ast.Token) (any, error) {
 	if val, has := e.values[token.Lexeme()]; has {
 		return val, nil
@@ -33,15 +45,21 @@ func (e *Env) Get(token *ast.Token) (any, error) {
 	return nil, fmt.Errorf("Get: Undefined variable '%s'", token.Lexeme())
 }
 
-func (e *Env) Assign(token *ast.Token, val any) error {
-	if _, has := e.values[token.Lexeme()]; has {
-		e.values[token.Lexeme()] = val
+func (e *Env) Assign(name *ast.Token, val any) error {
+	if _, has := e.values[name.Lexeme()]; has {
+		e.values[name.Lexeme()] = val
 		return nil
 	}
 
 	if e.enclosing != nil {
-		return e.enclosing.Assign(token, val)
+		return e.enclosing.Assign(name, val)
 	}
 
-	return fmt.Errorf("Assign: Undefined variable '%s'", token.Lexeme())
+	return fmt.Errorf("Assign: Undefined variable '%s'", name.Lexeme())
+}
+
+func (e *Env) AssignAt(distance int, name *ast.Token, val any) error {
+	env := e.ancestor(distance)
+	env.values[name.Lexeme()] = val
+	return nil
 }
