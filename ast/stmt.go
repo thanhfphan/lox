@@ -1,5 +1,7 @@
 package ast
 
+import "lox/token"
+
 type Stmt interface {
 	Accept(v StmtVisitor)
 }
@@ -24,7 +26,7 @@ func (s *ExpressionStmt) Accept(v StmtVisitor) {
 
 // VarStmt ...
 type VarStmt struct {
-	Name        *Token
+	Name        *token.Token
 	Initializer Expr
 }
 
@@ -64,8 +66,8 @@ func (s *WhileStmt) Accept(v StmtVisitor) {
 
 // FunctionStmt
 type FunctionStmt struct {
-	Name   *Token
-	Params []*Token
+	Name   *token.Token
+	Params []*token.Token
 	Body   []Stmt
 }
 
@@ -75,7 +77,7 @@ func (s *FunctionStmt) Accept(v StmtVisitor) {
 
 // ReturnStmt
 type ReturnStmt struct {
-	KeyWord *Token
+	KeyWord *token.Token
 	Value   Expr
 }
 

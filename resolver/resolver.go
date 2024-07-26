@@ -1,10 +1,11 @@
-package resolve
+package resolver
 
 import (
 	"fmt"
 	"lox/ast"
 	"lox/dst"
-	"lox/interpret"
+	"lox/interpreter"
+	"lox/token"
 )
 
 var (
@@ -20,12 +21,12 @@ const (
 )
 
 type Resolver struct {
-	interpreter *interpret.Interpreter
+	interpreter *interpreter.Interpreter
 	scopes      *dst.Stack[map[string]bool]
 	currentFunc FunctionType
 }
 
-func NewResolver(i *interpret.Interpreter) *Resolver {
+func NewResolver(i *interpreter.Interpreter) *Resolver {
 	return &Resolver{
 		interpreter: i,
 		scopes:      dst.NewStack[map[string]bool](),
@@ -68,7 +69,7 @@ func (r *Resolver) resolveExpr(expr ast.Expr) {
 	expr.Accept(r)
 }
 
-func (r *Resolver) resolveLocal(expr ast.Expr, name *ast.Token) {
+func (r *Resolver) resolveLocal(expr ast.Expr, name *token.Token) {
 	pointer := r.scopes.Peek()
 	dept := 0
 	for pointer != nil {
@@ -81,7 +82,7 @@ func (r *Resolver) resolveLocal(expr ast.Expr, name *ast.Token) {
 	}
 }
 
-func (r *Resolver) declare(name *ast.Token) {
+func (r *Resolver) declare(name *token.Token) {
 	if r.scopes.IsEmpty() {
 		return
 	}
@@ -93,7 +94,7 @@ func (r *Resolver) declare(name *ast.Token) {
 	scope[name.Lexeme()] = false
 }
 
-func (r *Resolver) define(name *ast.Token) {
+func (r *Resolver) define(name *token.Token) {
 	if r.scopes.IsEmpty() {
 		return
 	}

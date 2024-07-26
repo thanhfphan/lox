@@ -1,9 +1,10 @@
-package interpret
+package interpreter
 
 import (
 	"fmt"
 	"lox/ast"
 	"lox/env"
+	"lox/token"
 	"reflect"
 )
 
@@ -120,9 +121,9 @@ func (i *Interpreter) VisitUnaryExpr(expr *ast.UnaryExpr) any {
 	right := i.evaluate(expr.Right)
 
 	switch expr.Op.Type() {
-	case ast.BANG:
+	case token.BANG:
 		return !i.isTruthy(right)
-	case ast.MINUS:
+	case token.MINUS:
 		v := right.(float64)
 		return -v
 	}
@@ -136,13 +137,13 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.BinaryExpr) any {
 
 	// TODO: check before cast value
 	switch expr.Op.Type() {
-	case ast.MINUS:
+	case token.MINUS:
 		return left.(float64) - right.(float64)
-	case ast.SLASH:
+	case token.SLASH:
 		return left.(float64) / right.(float64)
-	case ast.STAR:
+	case token.STAR:
 		return left.(float64) * right.(float64)
-	case ast.PLUS:
+	case token.PLUS:
 		if reflect.TypeOf(left).Kind() == reflect.Float64 &&
 			reflect.TypeOf(right).Kind() == reflect.Float64 {
 			return left.(float64) + right.(float64)
@@ -152,17 +153,17 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.BinaryExpr) any {
 			reflect.TypeOf(right).Kind() == reflect.String {
 			return left.(string) + right.(string)
 		}
-	case ast.GREATER:
+	case token.GREATER:
 		return left.(float64) > right.(float64)
-	case ast.GREATER_EQUAL:
+	case token.GREATER_EQUAL:
 		return left.(float64) >= right.(float64)
-	case ast.LESS:
+	case token.LESS:
 		return left.(float64) < right.(float64)
-	case ast.LESS_EQUAL:
+	case token.LESS_EQUAL:
 		return left.(float64) <= right.(float64)
-	case ast.BANG_EQUAL:
+	case token.BANG_EQUAL:
 		return !i.isEqual(left, right)
-	case ast.EQUAL_EQUAL:
+	case token.EQUAL_EQUAL:
 		return i.isEqual(left, right)
 	}
 
@@ -187,7 +188,7 @@ func (i *Interpreter) VisitAssignExpr(expr *ast.AssignExpr) any {
 
 func (i *Interpreter) VisitLogicalExpr(expr *ast.LogicalExpr) any {
 	left := i.evaluate(expr.Left)
-	if expr.Operator.Type() == ast.OR {
+	if expr.Operator.Type() == token.OR {
 		if i.isTruthy(left) {
 			return left
 		}
@@ -231,7 +232,7 @@ func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
 	}
 }
 
-func (i *Interpreter) lookUpVariable(name *ast.Token, expr ast.Expr) any {
+func (i *Interpreter) lookUpVariable(name *token.Token, expr ast.Expr) any {
 	distance, has := i.locals[expr]
 	if has {
 		return i.env.GetAt(distance, name.Lexeme())

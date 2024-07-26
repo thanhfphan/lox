@@ -2,7 +2,7 @@ package env
 
 import (
 	"fmt"
-	"lox/ast"
+	"lox/token"
 )
 
 type Env struct {
@@ -33,7 +33,7 @@ func (e *Env) ancestor(distance int) *Env {
 	return env
 }
 
-func (e *Env) Get(token *ast.Token) (any, error) {
+func (e *Env) Get(token *token.Token) (any, error) {
 	if val, has := e.values[token.Lexeme()]; has {
 		return val, nil
 	}
@@ -45,7 +45,7 @@ func (e *Env) Get(token *ast.Token) (any, error) {
 	return nil, fmt.Errorf("Get: Undefined variable '%s'", token.Lexeme())
 }
 
-func (e *Env) Assign(name *ast.Token, val any) error {
+func (e *Env) Assign(name *token.Token, val any) error {
 	if _, has := e.values[name.Lexeme()]; has {
 		e.values[name.Lexeme()] = val
 		return nil
@@ -58,7 +58,7 @@ func (e *Env) Assign(name *ast.Token, val any) error {
 	return fmt.Errorf("Assign: Undefined variable '%s'", name.Lexeme())
 }
 
-func (e *Env) AssignAt(distance int, name *ast.Token, val any) error {
+func (e *Env) AssignAt(distance int, name *token.Token, val any) error {
 	env := e.ancestor(distance)
 	env.values[name.Lexeme()] = val
 	return nil

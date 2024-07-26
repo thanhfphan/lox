@@ -1,5 +1,7 @@
 package ast
 
+import "lox/token"
+
 type Expr interface {
 	Accept(v ExprVisitor) any
 }
@@ -7,7 +9,7 @@ type Expr interface {
 // BinaryExpr ...
 type BinaryExpr struct {
 	Left  Expr
-	Op    Token
+	Op    token.Token
 	Right Expr
 }
 
@@ -17,7 +19,7 @@ func (e *BinaryExpr) Accept(v ExprVisitor) any {
 
 // UnaryExpr ...
 type UnaryExpr struct {
-	Op    Token
+	Op    token.Token
 	Right Expr
 }
 
@@ -45,7 +47,7 @@ func (e *GroupingExpr) Accept(v ExprVisitor) any {
 
 // VariableExpr ...
 type VariableExpr struct {
-	Name *Token
+	Name *token.Token
 }
 
 func (e *VariableExpr) Accept(v ExprVisitor) any {
@@ -54,7 +56,7 @@ func (e *VariableExpr) Accept(v ExprVisitor) any {
 
 // AssignExpr ...
 type AssignExpr struct {
-	Name  *Token
+	Name  *token.Token
 	Value Expr
 }
 
@@ -65,7 +67,7 @@ func (e *AssignExpr) Accept(v ExprVisitor) any {
 // LogicalExpr ...
 type LogicalExpr struct {
 	Left     Expr
-	Operator *Token
+	Operator *token.Token
 	Right    Expr
 }
 
@@ -76,7 +78,7 @@ func (s *LogicalExpr) Accept(v ExprVisitor) any {
 // CallExpr ...
 type CallExpr struct {
 	Callee    Expr
-	Paren     *Token
+	Paren     *token.Token
 	Arguments []Expr
 }
 

@@ -1,4 +1,4 @@
-package interpret
+package interpreter
 
 import (
 	"lox/ast"

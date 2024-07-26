@@ -2,10 +2,10 @@ package main
 
 import (
 	"io"
-	"lox/ast"
-	"lox/interpret"
-	"lox/resolve"
-	"lox/scan"
+	"lox/interpreter"
+	"lox/parser"
+	"lox/resolver"
+	"lox/scanner"
 	"os"
 )
 
@@ -19,14 +19,10 @@ func main() {
 		panic(err)
 	}
 
-	scaner := scan.NewScanner([]rune(string(content)))
-	tokens := scaner.ScanTokens()
-	parser := ast.NewParser(tokens)
-	// parse statements
-	stmts := parser.ParserStmt()
-	i := interpret.New()
-	// resolving
-	resolver := resolve.NewResolver(i)
-	resolver.Resolve(stmts)
+	tokens := scanner.NewScanner([]rune(string(content))).ScanTokens()
+	stmts := parser.New(tokens).ParserStmt()
+	i := interpreter.New()
+	resolver.NewResolver(i).Resolve(stmts)
+	// TODO: check error resolve
 	i.Interpret(stmts)
 }
