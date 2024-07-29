@@ -51,6 +51,6 @@ func (f *Function) Call(interpreter *Interpreter, arguments []any) any {
 	return returnValue
 }
 
-func (f *Function) ToString() string {
+func (f *Function) String() string {
 	return "<fn " + f.declaration.Name.Lexeme() + ">"
 }

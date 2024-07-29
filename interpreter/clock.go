@@ -21,6 +21,6 @@ func (c *Clock) Call(interpreter *Interpreter, arguments []any) any {
 	return time.Now().Unix()
 }
 
-func (c *Clock) ToString() string {
+func (c *Clock) String() string {
 	return "<native fn>"
 }
