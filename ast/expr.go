@@ -85,3 +85,24 @@ type CallExpr struct {
 func (s *CallExpr) Accept(v ExprVisitor) any {
 	return v.VisitCallExpr(s)
 }
+
+// GetExpr ...
+type GetExpr struct {
+	Object Expr
+	Name   *token.Token
+}
+
+func (s *GetExpr) Accept(v ExprVisitor) any {
+	return v.VisitGetExpr(s)
+}
+
+// SetExpr ...
+type SetExpr struct {
+	Object Expr
+	Name   *token.Token
+	Value  Expr
+}
+
+func (s *SetExpr) Accept(v ExprVisitor) any {
+	return v.VisitSetExpr(s)
+}

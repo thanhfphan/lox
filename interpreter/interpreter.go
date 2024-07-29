@@ -116,7 +116,14 @@ func (i *Interpreter) VisitReturnStmt(stmt *ast.ReturnStmt) any {
 
 func (i *Interpreter) VisitClassStmt(stmt *ast.ClassStmt) any {
 	i.env.Define(stmt.Name.Lexeme(), nil)
-	c := NewClass(stmt.Name.Lexeme())
+
+	methods := map[string]*Function{}
+	for _, method := range stmt.Methods {
+		f := NewFunction(method, i.env)
+		methods[method.Name.Lexeme()] = f
+	}
+
+	c := NewClass(stmt.Name.Lexeme(), methods)
 	i.env.Assign(stmt.Name, c)
 	return nil
 }
@@ -231,6 +238,29 @@ func (i *Interpreter) VisitCallExpr(expr *ast.CallExpr) any {
 	}
 
 	return function.Call(i, args)
+}
+
+func (i *Interpreter) VisitGetExpr(expr *ast.GetExpr) any {
+	obj := i.evaluate(expr.Object)
+	ins, ok := obj.(*Instance)
+	if !ok {
+		panic(fmt.Errorf("%s Only instances have properties.", expr.Name))
+	}
+
+	return ins.Get(expr.Name)
+}
+
+func (i *Interpreter) VisitSetExpr(expr *ast.SetExpr) any {
+	obj := i.evaluate(expr.Object)
+	ins, ok := obj.(*Instance)
+	if !ok {
+		panic(fmt.Errorf("%s Only instances have fields.", expr.Name))
+	}
+
+	val := i.evaluate(expr.Value)
+	ins.Set(expr.Name, val)
+
+	return val
 }
 
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {

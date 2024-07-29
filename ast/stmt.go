@@ -1,6 +1,8 @@
 package ast
 
-import "lox/token"
+import (
+	"lox/token"
+)
 
 type Stmt interface {
 	Accept(v StmtVisitor)
@@ -88,7 +90,7 @@ func (s *ReturnStmt) Accept(v StmtVisitor) {
 // ClassStmt
 type ClassStmt struct {
 	Name    *token.Token
-	Methods []Stmt
+	Methods []*FunctionStmt
 }
 
 func (s *ClassStmt) Accept(v StmtVisitor) {

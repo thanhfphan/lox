@@ -9,6 +9,8 @@ type ExprVisitor interface {
 	VisitAssignExpr(*AssignExpr) any
 	VisitLogicalExpr(*LogicalExpr) any
 	VisitCallExpr(*CallExpr) any
+	VisitGetExpr(*GetExpr) any
+	VisitSetExpr(*SetExpr) any
 }
 
 type StmtVisitor interface {

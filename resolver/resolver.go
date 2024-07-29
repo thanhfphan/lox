@@ -13,13 +13,6 @@ var (
 	_ ast.StmtVisitor = (*Resolver)(nil)
 )
 
-type FunctionType int
-
-const (
-	NONE     FunctionType = 1
-	FUNCTION FunctionType = 2
-)
-
 type Resolver struct {
 	interpreter *interpreter.Interpreter
 	scopes      *dst.Stack[map[string]bool]
@@ -172,6 +165,11 @@ func (r *Resolver) VisitWhileStmt(stmt *ast.WhileStmt) any {
 func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
+
+	for _, method := range stmt.Methods {
+		r.resolveFunction(method, METHOD)
+	}
+
 	return nil
 }
 
@@ -226,5 +224,16 @@ func (r *Resolver) VisitVariableExpr(expr *ast.VariableExpr) any {
 
 	r.resolveLocal(expr, expr.Name)
 
+	return nil
+}
+
+func (r *Resolver) VisitGetExpr(expr *ast.GetExpr) any {
+	r.resolveExpr(expr.Object)
+	return nil
+}
+
+func (r *Resolver) VisitSetExpr(expr *ast.SetExpr) any {
+	r.resolveExpr(expr.Value)
+	r.resolveExpr(expr.Object)
 	return nil
 }

@@ -84,7 +84,7 @@ func (p *Parser) returnStmt() ast.Stmt {
 	}
 }
 
-func (p *Parser) function(kind string) ast.Stmt {
+func (p *Parser) function(kind string) *ast.FunctionStmt {
 	funcName := p.consume(token.IDENTIFIER, "Expect "+kind+" name.")
 
 	p.consume(token.LEFT_PAREN, "Expect '(' after "+kind+" name.")
@@ -204,7 +204,7 @@ func (p *Parser) classDeclaration() ast.Stmt {
 	name := p.consume(token.IDENTIFIER, "Expect class name.")
 	p.consume(token.LEFT_BRACE, "Expect '{' before class body.")
 
-	methods := []ast.Stmt{}
+	methods := []*ast.FunctionStmt{}
 	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
 		methods = append(methods, p.function("method"))
 	}
@@ -290,6 +290,12 @@ func (p *Parser) assignment() ast.Expr {
 			return &ast.AssignExpr{
 				Name:  v.Name,
 				Value: val,
+			}
+		case *ast.GetExpr:
+			return &ast.SetExpr{
+				Object: v.Object,
+				Name:   v.Name,
+				Value:  val,
 			}
 		}
 
@@ -429,6 +435,12 @@ func (p *Parser) call() ast.Expr {
 	for {
 		if p.match(token.LEFT_PAREN) {
 			expr = p.finishCall(expr)
+		} else if p.match(token.DOT) {
+			name := p.consume(token.IDENTIFIER, "Expect property name after '.'.")
+			expr = &ast.GetExpr{
+				Name:   name,
+				Object: expr,
+			}
 		} else {
 			break
 		}
