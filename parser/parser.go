@@ -31,6 +31,9 @@ func (p *Parser) ParserStmt() []ast.Stmt {
 }
 
 func (p *Parser) declaration() ast.Stmt {
+	if p.match(token.CLASS) {
+		return p.classDeclaration()
+	}
 	if p.match(token.FUN) {
 		return p.function("function")
 	}
@@ -194,6 +197,23 @@ func (p *Parser) ifStmt() ast.Stmt {
 		Condition: condition,
 		Then:      thenBranch,
 		Else:      elseBranch,
+	}
+}
+
+func (p *Parser) classDeclaration() ast.Stmt {
+	name := p.consume(token.IDENTIFIER, "Expect class name.")
+	p.consume(token.LEFT_BRACE, "Expect '{' before class body.")
+
+	methods := []ast.Stmt{}
+	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
+		methods = append(methods, p.function("method"))
+	}
+
+	p.consume(token.RIGHT_BRACE, "Epect '}' after class body.")
+
+	return &ast.ClassStmt{
+		Name:    name,
+		Methods: methods,
 	}
 }
 
@@ -440,16 +460,16 @@ func (p *Parser) finishCall(callee ast.Expr) ast.Expr {
 //	| "(" expression ")" ;
 func (p *Parser) primary() ast.Expr {
 	if p.match(token.FALSE) {
-		return &ast.LiteralExpr{false}
+		return &ast.LiteralExpr{Val: false}
 	}
 	if p.match(token.TRUE) {
-		return &ast.LiteralExpr{true}
+		return &ast.LiteralExpr{Val: true}
 	}
 	if p.match(token.NIL) {
-		return &ast.LiteralExpr{nil}
+		return &ast.LiteralExpr{Val: nil}
 	}
 	if p.match(token.NUMBER, token.STRING) {
-		return &ast.LiteralExpr{p.previous().Literal()}
+		return &ast.LiteralExpr{Val: p.previous().Literal()}
 	}
 	if p.match(token.IDENTIFIER) {
 		return &ast.VariableExpr{

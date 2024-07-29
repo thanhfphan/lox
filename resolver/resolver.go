@@ -107,14 +107,16 @@ func (r *Resolver) Resolve(stmts []ast.Stmt) {
 	r.resolveListStmt(stmts)
 }
 
-func (r *Resolver) VisitBlockStmt(stmt *ast.BlockStmt) {
+func (r *Resolver) VisitBlockStmt(stmt *ast.BlockStmt) any {
 	r.beginScope()
 	r.resolveListStmt(stmt.Statements)
 	r.endScope()
+	return nil
 }
 
-func (r *Resolver) VisitExpressionStmt(stmt *ast.ExpressionStmt) {
+func (r *Resolver) VisitExpressionStmt(stmt *ast.ExpressionStmt) any {
 	r.resolveExpr(stmt.Expression)
+	return nil
 }
 
 func (r *Resolver) VisitFunctionStmt(stmt *ast.FunctionStmt) any {
@@ -126,16 +128,18 @@ func (r *Resolver) VisitFunctionStmt(stmt *ast.FunctionStmt) any {
 	return nil
 }
 
-func (r *Resolver) VisitIfStmt(stmt *ast.IfStmt) {
+func (r *Resolver) VisitIfStmt(stmt *ast.IfStmt) any {
 	r.resolveExpr(stmt.Condition)
 	r.resolveStmt(stmt.Then)
 	if stmt.Else != nil {
 		r.resolveStmt(stmt.Else)
 	}
+	return nil
 }
 
-func (r *Resolver) VisitPrintStmt(stmt *ast.PrintStmt) {
+func (r *Resolver) VisitPrintStmt(stmt *ast.PrintStmt) any {
 	r.resolveExpr(stmt.Expression)
+	return nil
 }
 
 func (r *Resolver) VisitReturnStmt(stmt *ast.ReturnStmt) any {
@@ -150,17 +154,25 @@ func (r *Resolver) VisitReturnStmt(stmt *ast.ReturnStmt) any {
 	return nil
 }
 
-func (r *Resolver) VisitVarStmt(stmt *ast.VarStmt) {
+func (r *Resolver) VisitVarStmt(stmt *ast.VarStmt) any {
 	r.declare(stmt.Name)
 	if stmt.Initializer != nil {
 		r.resolveExpr(stmt.Initializer)
 	}
 	r.define(stmt.Name)
+	return nil
 }
 
-func (r *Resolver) VisitWhileStmt(stmt *ast.WhileStmt) {
+func (r *Resolver) VisitWhileStmt(stmt *ast.WhileStmt) any {
 	r.resolveExpr(stmt.Condition)
 	r.resolveStmt(stmt.Body)
+	return nil
+}
+
+func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
+	r.declare(stmt.Name)
+	r.define(stmt.Name)
+	return nil
 }
 
 func (r *Resolver) VisitAssignExpr(expr *ast.AssignExpr) any {

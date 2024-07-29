@@ -12,12 +12,13 @@ type ExprVisitor interface {
 }
 
 type StmtVisitor interface {
-	VisitPrintStmt(stmt *PrintStmt)
-	VisitExpressionStmt(stmt *ExpressionStmt)
-	VisitVarStmt(stmt *VarStmt)
-	VisitBlockStmt(stmt *BlockStmt)
-	VisitIfStmt(stmt *IfStmt)
-	VisitWhileStmt(stmt *WhileStmt)
+	VisitPrintStmt(stmt *PrintStmt) any
+	VisitExpressionStmt(stmt *ExpressionStmt) any
+	VisitVarStmt(stmt *VarStmt) any
+	VisitBlockStmt(stmt *BlockStmt) any
+	VisitIfStmt(stmt *IfStmt) any
+	VisitWhileStmt(stmt *WhileStmt) any
 	VisitFunctionStmt(*FunctionStmt) any
 	VisitReturnStmt(*ReturnStmt) any
+	VisitClassStmt(*ClassStmt) any
 }

@@ -52,41 +52,47 @@ func (i *Interpreter) Resolve(expr ast.Expr, depth int) {
 }
 
 // Stmt visitors
-func (i *Interpreter) VisitPrintStmt(stmt *ast.PrintStmt) {
+func (i *Interpreter) VisitPrintStmt(stmt *ast.PrintStmt) any {
 	val := i.evaluate(stmt.Expression)
 	fmt.Println(val)
+	return nil
 }
 
-func (i *Interpreter) VisitExpressionStmt(stmt *ast.ExpressionStmt) {
+func (i *Interpreter) VisitExpressionStmt(stmt *ast.ExpressionStmt) any {
 	i.evaluate(stmt.Expression)
+	return nil
 }
 
-func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) {
+func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) any {
 	var v any
 	if stmt.Initializer != nil {
 		v = i.evaluate(stmt.Initializer)
 	}
 
 	i.env.Define(stmt.Name.Lexeme(), v)
+	return nil
 }
 
-func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) {
+func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) any {
 	newEnv := env.New(i.env)
 	i.executeBlock(stmt.Statements, newEnv)
+	return nil
 }
 
-func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) {
+func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) any {
 	if i.isTruthy(i.evaluate(stmt.Condition)) {
 		i.execute(stmt.Then)
 	} else if stmt.Else != nil {
 		i.execute(stmt.Else)
 	}
+	return nil
 }
 
-func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) {
+func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) any {
 	for i.isTruthy(i.evaluate(stmt.Condition)) {
 		i.execute(stmt.Body)
 	}
+	return nil
 }
 
 func (i *Interpreter) VisitFunctionStmt(stmt *ast.FunctionStmt) any {
@@ -106,6 +112,13 @@ func (i *Interpreter) VisitReturnStmt(stmt *ast.ReturnStmt) any {
 	}
 	// hack to back top of the Stack
 	panic(r)
+}
+
+func (i *Interpreter) VisitClassStmt(stmt *ast.ClassStmt) any {
+	i.env.Define(stmt.Name.Lexeme(), nil)
+	c := NewClass(stmt.Name.Lexeme())
+	i.env.Assign(stmt.Name, c)
+	return nil
 }
 
 // Expr visitors
