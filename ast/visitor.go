@@ -11,6 +11,7 @@ type ExprVisitor interface {
 	VisitCallExpr(*CallExpr) any
 	VisitGetExpr(*GetExpr) any
 	VisitSetExpr(*SetExpr) any
+	VisitThisExpr(*ThisExpr) any
 }
 
 type StmtVisitor interface {

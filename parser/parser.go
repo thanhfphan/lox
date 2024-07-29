@@ -483,6 +483,11 @@ func (p *Parser) primary() ast.Expr {
 	if p.match(token.NUMBER, token.STRING) {
 		return &ast.LiteralExpr{Val: p.previous().Literal()}
 	}
+	if p.match(token.THIS) {
+		return &ast.ThisExpr{
+			Keyword: p.previous(),
+		}
+	}
 	if p.match(token.IDENTIFIER) {
 		return &ast.VariableExpr{
 			Name: p.previous(),

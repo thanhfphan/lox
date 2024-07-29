@@ -106,3 +106,12 @@ type SetExpr struct {
 func (s *SetExpr) Accept(v ExprVisitor) any {
 	return v.VisitSetExpr(s)
 }
+
+// ThisExpr ...
+type ThisExpr struct {
+	Keyword *token.Token
+}
+
+func (s *ThisExpr) Accept(v ExprVisitor) any {
+	return v.VisitThisExpr(s)
+}

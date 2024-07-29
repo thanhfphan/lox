@@ -43,7 +43,7 @@ func (i *Instance) Get(name *token.Token) any {
 
 	method := i.class.FindMethod(name.Lexeme())
 	if method != nil {
-		return method
+		return method.Bind(i)
 	}
 
 	panic(fmt.Errorf("%s Undefined property '%s'.", name, name.Lexeme()))

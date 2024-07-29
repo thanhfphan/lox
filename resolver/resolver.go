@@ -16,14 +16,17 @@ var (
 type Resolver struct {
 	interpreter *interpreter.Interpreter
 	scopes      *dst.Stack[map[string]bool]
-	currentFunc FunctionType
+
+	currentFunc  FunctionType
+	currentClass ClassType
 }
 
 func NewResolver(i *interpreter.Interpreter) *Resolver {
 	return &Resolver{
-		interpreter: i,
-		scopes:      dst.NewStack[map[string]bool](),
-		currentFunc: NONE,
+		interpreter:  i,
+		scopes:       dst.NewStack[map[string]bool](),
+		currentFunc:  FT_NONE,
+		currentClass: CT_NONE,
 	}
 }
 
@@ -116,7 +119,7 @@ func (r *Resolver) VisitFunctionStmt(stmt *ast.FunctionStmt) any {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
 
-	r.resolveFunction(stmt, FUNCTION)
+	r.resolveFunction(stmt, FT_FUNCTION)
 
 	return nil
 }
@@ -136,7 +139,7 @@ func (r *Resolver) VisitPrintStmt(stmt *ast.PrintStmt) any {
 }
 
 func (r *Resolver) VisitReturnStmt(stmt *ast.ReturnStmt) any {
-	if r.currentFunc == NONE {
+	if r.currentFunc == FT_NONE {
 		panic(fmt.Errorf("%s Can't return from top-level code.", stmt.KeyWord.String()))
 	}
 
@@ -163,12 +166,21 @@ func (r *Resolver) VisitWhileStmt(stmt *ast.WhileStmt) any {
 }
 
 func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
+	enclosingClass := r.currentClass
+	r.currentClass = CT_CLASS
+
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
 
+	r.beginScope()
+	peek := r.scopes.Peek().Val
+	peek["this"] = true
 	for _, method := range stmt.Methods {
-		r.resolveFunction(method, METHOD)
+		r.resolveFunction(method, FT_METHOD)
 	}
+	r.endScope()
+
+	r.currentClass = enclosingClass
 
 	return nil
 }
@@ -235,5 +247,14 @@ func (r *Resolver) VisitGetExpr(expr *ast.GetExpr) any {
 func (r *Resolver) VisitSetExpr(expr *ast.SetExpr) any {
 	r.resolveExpr(expr.Value)
 	r.resolveExpr(expr.Object)
+	return nil
+}
+
+func (r *Resolver) VisitThisExpr(expr *ast.ThisExpr) any {
+	if r.currentClass == CT_NONE {
+		panic(fmt.Errorf("%v Can't use 'this' outside of a class.", expr.Keyword))
+	}
+
+	r.resolveLocal(expr, expr.Keyword)
 	return nil
 }

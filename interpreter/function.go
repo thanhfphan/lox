@@ -54,3 +54,9 @@ func (f *Function) Call(interpreter *Interpreter, arguments []any) any {
 func (f *Function) String() string {
 	return "<fn " + f.declaration.Name.Lexeme() + ">"
 }
+
+func (f *Function) Bind(ins *Instance) *Function {
+	env := env.New(f.closure)
+	env.Define("this", ins)
+	return NewFunction(f.declaration, env)
+}

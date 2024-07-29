@@ -263,6 +263,10 @@ func (i *Interpreter) VisitSetExpr(expr *ast.SetExpr) any {
 	return val
 }
 
+func (i *Interpreter) VisitThisExpr(expr *ast.ThisExpr) any {
+	return i.lookUpVariable(expr.Keyword, expr)
+}
+
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {
 	prevEnv := i.env
 	defer func() {
