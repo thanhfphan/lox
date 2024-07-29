@@ -15,11 +15,20 @@ func NewClass(name string, methods map[string]*Function) *Class {
 }
 
 func (c *Class) Arity() int {
-	return 0
+	initalizer := c.FindMethod("init")
+	if initalizer == nil {
+		return 0
+	}
+
+	return initalizer.Arity()
 }
 
 func (c *Class) Call(interpreter *Interpreter, arguments []any) any {
 	instance := NewInstance(c)
+	initMethod := c.FindMethod("init")
+	if initMethod != nil {
+		initMethod.Bind(instance).Call(interpreter, arguments)
+	}
 	return instance
 }
 

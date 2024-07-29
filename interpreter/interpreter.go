@@ -96,7 +96,7 @@ func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) any {
 }
 
 func (i *Interpreter) VisitFunctionStmt(stmt *ast.FunctionStmt) any {
-	fun := NewFunction(stmt, i.env)
+	fun := NewFunction(stmt, i.env, false)
 	i.env.Define(stmt.Name.Lexeme(), fun)
 	return nil
 }
@@ -119,7 +119,8 @@ func (i *Interpreter) VisitClassStmt(stmt *ast.ClassStmt) any {
 
 	methods := map[string]*Function{}
 	for _, method := range stmt.Methods {
-		f := NewFunction(method, i.env)
+		isInitializer := method.Name.Lexeme() == "init"
+		f := NewFunction(method, i.env, isInitializer)
 		methods[method.Name.Lexeme()] = f
 	}
 

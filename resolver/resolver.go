@@ -144,6 +144,10 @@ func (r *Resolver) VisitReturnStmt(stmt *ast.ReturnStmt) any {
 	}
 
 	if stmt.Value != nil {
+		if r.currentFunc == FT_INITIALIZER {
+			panic(fmt.Errorf("%v Can't return a value from an initializer.", stmt.KeyWord))
+		}
+
 		r.resolveExpr(stmt.Value)
 	}
 
@@ -176,7 +180,11 @@ func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
 	peek := r.scopes.Peek().Val
 	peek["this"] = true
 	for _, method := range stmt.Methods {
-		r.resolveFunction(method, FT_METHOD)
+		declaration := FT_METHOD
+		if method.Name.Lexeme() == "init" {
+			declaration = FT_INITIALIZER
+		}
+		r.resolveFunction(method, declaration)
 	}
 	r.endScope()
 

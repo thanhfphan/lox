@@ -8,14 +8,16 @@ import (
 var _ Callable = (*Function)(nil)
 
 type Function struct {
-	declaration *ast.FunctionStmt
-	closure     *env.Env
+	declaration   *ast.FunctionStmt
+	closure       *env.Env
+	isInitializer bool
 }
 
-func NewFunction(declaration *ast.FunctionStmt, closure *env.Env) *Function {
+func NewFunction(declaration *ast.FunctionStmt, closure *env.Env, isInitializer bool) *Function {
 	return &Function{
-		declaration: declaration,
-		closure:     closure,
+		declaration:   declaration,
+		closure:       closure,
+		isInitializer: isInitializer,
 	}
 }
 
@@ -40,6 +42,11 @@ func (f *Function) Call(interpreter *Interpreter, arguments []any) any {
 					return
 				}
 
+				if f.isInitializer {
+					returnValue = f.closure.GetAt(0, "this")
+					return
+				}
+
 				// return statement
 				returnValue = tmp.Value
 			}
@@ -47,6 +54,10 @@ func (f *Function) Call(interpreter *Interpreter, arguments []any) any {
 
 		interpreter.executeBlock(f.declaration.Body, env)
 	}()
+
+	if f.isInitializer {
+		return f.closure.GetAt(0, "this")
+	}
 
 	return returnValue
 }
@@ -58,5 +69,5 @@ func (f *Function) String() string {
 func (f *Function) Bind(ins *Instance) *Function {
 	env := env.New(f.closure)
 	env.Define("this", ins)
-	return NewFunction(f.declaration, env)
+	return NewFunction(f.declaration, env, f.isInitializer)
 }
