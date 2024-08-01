@@ -115,6 +115,15 @@ func (i *Interpreter) VisitReturnStmt(stmt *ast.ReturnStmt) any {
 }
 
 func (i *Interpreter) VisitClassStmt(stmt *ast.ClassStmt) any {
+	var superClass *Class
+	if stmt.SuperClass != nil {
+		tmpClass := i.evaluate(stmt.SuperClass)
+		superClass, _ = tmpClass.(*Class)
+		if superClass == nil {
+			panic(fmt.Errorf("Superclass '%s' must be a class.", stmt.SuperClass.Name))
+		}
+	}
+
 	i.env.Define(stmt.Name.Lexeme(), nil)
 
 	methods := map[string]*Function{}
@@ -124,7 +133,7 @@ func (i *Interpreter) VisitClassStmt(stmt *ast.ClassStmt) any {
 		methods[method.Name.Lexeme()] = f
 	}
 
-	c := NewClass(stmt.Name.Lexeme(), methods)
+	c := NewClass(stmt.Name.Lexeme(), methods, superClass)
 	i.env.Assign(stmt.Name, c)
 	return nil
 }

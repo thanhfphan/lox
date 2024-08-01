@@ -176,6 +176,14 @@ func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
 
+	if stmt.SuperClass != nil {
+		if stmt.Name.Lexeme() == stmt.SuperClass.Name.Lexeme() {
+			panic(fmt.Errorf("A class '%s' can't inherit from itself.", stmt.Name.Lexeme()))
+		}
+
+		r.resolveExpr(stmt.SuperClass)
+	}
+
 	r.beginScope()
 	peek := r.scopes.Peek().Val
 	peek["this"] = true

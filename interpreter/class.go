@@ -3,14 +3,16 @@ package interpreter
 var _ Callable = (*Class)(nil)
 
 type Class struct {
-	name    string
-	methods map[string]*Function
+	superClass *Class
+	name       string
+	methods    map[string]*Function
 }
 
-func NewClass(name string, methods map[string]*Function) *Class {
+func NewClass(name string, methods map[string]*Function, superClass *Class) *Class {
 	return &Class{
-		name:    name,
-		methods: methods,
+		name:       name,
+		methods:    methods,
+		superClass: superClass,
 	}
 }
 
@@ -37,10 +39,13 @@ func (c *Class) String() string {
 }
 
 func (c *Class) FindMethod(name string) *Function {
-	val, ok := c.methods[name]
-	if !ok {
-		return nil
+	if val, ok := c.methods[name]; ok {
+		return val
 	}
 
-	return val
+	if c.superClass != nil {
+		return c.superClass.FindMethod(name)
+	}
+
+	return nil
 }

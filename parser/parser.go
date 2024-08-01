@@ -202,6 +202,15 @@ func (p *Parser) ifStmt() ast.Stmt {
 
 func (p *Parser) classDeclaration() ast.Stmt {
 	name := p.consume(token.IDENTIFIER, "Expect class name.")
+
+	var superClass *ast.VariableExpr
+	if p.match(token.LESS) {
+		p.consume(token.IDENTIFIER, "Expect super class name.")
+		superClass = &ast.VariableExpr{
+			Name: p.previous(),
+		}
+	}
+
 	p.consume(token.LEFT_BRACE, "Expect '{' before class body.")
 
 	methods := []*ast.FunctionStmt{}
@@ -212,8 +221,9 @@ func (p *Parser) classDeclaration() ast.Stmt {
 	p.consume(token.RIGHT_BRACE, "Epect '}' after class body.")
 
 	return &ast.ClassStmt{
-		Name:    name,
-		Methods: methods,
+		Name:       name,
+		SuperClass: superClass,
+		Methods:    methods,
 	}
 }
 
