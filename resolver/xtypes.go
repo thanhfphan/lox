@@ -12,6 +12,7 @@ const (
 type ClassType int
 
 const (
-	CT_NONE  ClassType = 1
-	CT_CLASS ClassType = 2
+	CT_NONE     ClassType = 1
+	CT_CLASS    ClassType = 2
+	CT_SUBCLASS ClassType = 3
 )

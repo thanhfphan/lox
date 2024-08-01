@@ -181,6 +181,7 @@ func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
 			panic(fmt.Errorf("A class '%s' can't inherit from itself.", stmt.Name.Lexeme()))
 		}
 
+		r.currentClass = CT_SUBCLASS
 		r.resolveExpr(stmt.SuperClass)
 
 		r.beginScope()
@@ -284,6 +285,12 @@ func (r *Resolver) VisitThisExpr(expr *ast.ThisExpr) any {
 }
 
 func (r *Resolver) VisitSuperExpr(expr *ast.SuperExpr) any {
+	if r.currentClass == CT_NONE {
+		panic("Can't use 'super' outside of a class.")
+	} else if r.currentClass != CT_SUBCLASS {
+		panic("Can't use 'super' in a class with no superclass.")
+	}
+
 	r.resolveLocal(expr, expr.Keyword)
 	return nil
 }
