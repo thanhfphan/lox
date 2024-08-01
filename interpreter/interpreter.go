@@ -126,6 +126,11 @@ func (i *Interpreter) VisitClassStmt(stmt *ast.ClassStmt) any {
 
 	i.env.Define(stmt.Name.Lexeme(), nil)
 
+	if stmt.SuperClass != nil {
+		i.env = env.New(i.env)
+		i.env.Define("super", superClass)
+	}
+
 	methods := map[string]*Function{}
 	for _, method := range stmt.Methods {
 		isInitializer := method.Name.Lexeme() == "init"
@@ -134,7 +139,13 @@ func (i *Interpreter) VisitClassStmt(stmt *ast.ClassStmt) any {
 	}
 
 	c := NewClass(stmt.Name.Lexeme(), methods, superClass)
+
+	if superClass != nil {
+		i.env = i.env.Enclosing()
+	}
+
 	i.env.Assign(stmt.Name, c)
+
 	return nil
 }
 
@@ -275,6 +286,25 @@ func (i *Interpreter) VisitSetExpr(expr *ast.SetExpr) any {
 
 func (i *Interpreter) VisitThisExpr(expr *ast.ThisExpr) any {
 	return i.lookUpVariable(expr.Keyword, expr)
+}
+
+func (i *Interpreter) VisitSuperExpr(expr *ast.SuperExpr) any {
+	distance := i.locals[expr]
+	superClass, ok := i.env.GetAt(distance, "super").(*Class)
+	if !ok {
+		panic(fmt.Errorf("Get supper class error at distance %d", distance))
+	}
+	object, ok := i.env.GetAt(distance-1, "this").(*Instance)
+	if !ok {
+		panic(fmt.Errorf("Get instance got error at distance %d", distance-1))
+	}
+
+	method := superClass.FindMethod(expr.Method.Lexeme())
+	if method == nil {
+		panic(fmt.Errorf("Undefined property '%s' of method '%s'.", expr.Method.Lexeme(), expr.Method.String()))
+	}
+
+	return method.Bind(object)
 }
 
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *env.Env) {

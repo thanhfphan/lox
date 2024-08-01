@@ -25,6 +25,10 @@ func (e *Env) GetAt(distance int, name string) any {
 	return e.ancestor(distance).values[name]
 }
 
+func (e *Env) Enclosing() *Env {
+	return e.enclosing
+}
+
 func (e *Env) ancestor(distance int) *Env {
 	env := e
 	for i := 0; i < distance; i++ {

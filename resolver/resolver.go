@@ -182,6 +182,10 @@ func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
 		}
 
 		r.resolveExpr(stmt.SuperClass)
+
+		r.beginScope()
+		peek := r.scopes.Peek().Val
+		peek["super"] = true
 	}
 
 	r.beginScope()
@@ -195,6 +199,10 @@ func (r *Resolver) VisitClassStmt(stmt *ast.ClassStmt) any {
 		r.resolveFunction(method, declaration)
 	}
 	r.endScope()
+
+	if stmt.SuperClass != nil {
+		r.endScope()
+	}
 
 	r.currentClass = enclosingClass
 
@@ -271,6 +279,11 @@ func (r *Resolver) VisitThisExpr(expr *ast.ThisExpr) any {
 		panic(fmt.Errorf("%v Can't use 'this' outside of a class.", expr.Keyword))
 	}
 
+	r.resolveLocal(expr, expr.Keyword)
+	return nil
+}
+
+func (r *Resolver) VisitSuperExpr(expr *ast.SuperExpr) any {
 	r.resolveLocal(expr, expr.Keyword)
 	return nil
 }

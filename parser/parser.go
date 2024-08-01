@@ -493,6 +493,15 @@ func (p *Parser) primary() ast.Expr {
 	if p.match(token.NUMBER, token.STRING) {
 		return &ast.LiteralExpr{Val: p.previous().Literal()}
 	}
+	if p.match(token.SUPER) {
+		k := p.previous()
+		p.consume(token.DOT, "Expect '.' after 'super'.")
+		m := p.consume(token.IDENTIFIER, "Expect superclass method name.")
+		return &ast.SuperExpr{
+			Keyword: k,
+			Method:  m,
+		}
+	}
 	if p.match(token.THIS) {
 		return &ast.ThisExpr{
 			Keyword: p.previous(),

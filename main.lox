@@ -1,9 +1,19 @@
-class Doughnut {
-  cook() {
-    print "Fry until golden brown.";
+class A {
+  method() {
+    print "A method";
   }
 }
 
-class BostonCream < Doughnut {}
+class B < A {
+  method() {
+    print "B method";
+  }
 
-BostonCream().cook();
+  test() {
+    super.method();
+  }
+}
+
+class C < B {}
+
+C().test();

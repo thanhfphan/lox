@@ -115,3 +115,13 @@ type ThisExpr struct {
 func (s *ThisExpr) Accept(v ExprVisitor) any {
 	return v.VisitThisExpr(s)
 }
+
+// SuperExpr
+type SuperExpr struct {
+	Keyword *token.Token
+	Method  *token.Token
+}
+
+func (s *SuperExpr) Accept(v ExprVisitor) any {
+	return v.VisitSuperExpr(s)
+}
